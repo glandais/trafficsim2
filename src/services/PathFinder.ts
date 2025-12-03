@@ -1,12 +1,12 @@
-import type { RoadGraph, Segment } from '../models';
-import { calculateDistance } from '../utils/geometry';
+import type { RoadGraph, Segment } from "../models";
+import { calculateDistance } from "../utils/geometry";
 
 /**
  * Path step with segment and direction
  */
 export interface PathStep {
   segmentId: string;
-  direction: 'forward' | 'backward';
+  direction: "forward" | "backward";
 }
 
 /**
@@ -24,10 +24,10 @@ export interface PathResult {
  */
 interface AStarNode {
   segmentId: string;
-  direction: 'forward' | 'backward';
-  gCost: number;     // Cost from start
-  hCost: number;     // Heuristic to goal
-  fCost: number;     // gCost + hCost
+  direction: "forward" | "backward";
+  gCost: number; // Cost from start
+  hCost: number; // Heuristic to goal
+  fCost: number; // gCost + hCost
   parent: AStarNode | null;
 }
 
@@ -75,7 +75,10 @@ class PriorityQueue {
       if (leftChild < this.heap.length && this.heap[leftChild].fCost < this.heap[smallest].fCost) {
         smallest = leftChild;
       }
-      if (rightChild < this.heap.length && this.heap[rightChild].fCost < this.heap[smallest].fCost) {
+      if (
+        rightChild < this.heap.length &&
+        this.heap[rightChild].fCost < this.heap[smallest].fCost
+      ) {
         smallest = rightChild;
       }
       if (smallest === index) break;
@@ -106,14 +109,19 @@ export class PathFinder {
     const endSegment = this.graph.segments.get(endSegmentId);
 
     if (!startSegment || !endSegment) {
-      return { found: false, path: [], totalDistance: 0, error: 'Invalid segment ID' };
+      return {
+        found: false,
+        path: [],
+        totalDistance: 0,
+        error: "Invalid segment ID",
+      };
     }
 
     if (startSegmentId === endSegmentId) {
       return {
         found: true,
-        path: [{ segmentId: startSegmentId, direction: 'forward' }],
-        totalDistance: startSegment.length
+        path: [{ segmentId: startSegmentId, direction: "forward" }],
+        totalDistance: startSegment.length,
       };
     }
 
@@ -123,7 +131,7 @@ export class PathFinder {
 
     // Determine starting direction based on segment properties
     // Start in forward direction by default
-    const startDirection: 'forward' | 'backward' = 'forward';
+    const startDirection: "forward" | "backward" = "forward";
     const startKey = `${startSegmentId}:${startDirection}`;
 
     const startNode: AStarNode = {
@@ -132,7 +140,7 @@ export class PathFinder {
       gCost: 0,
       hCost: this.heuristic(startSegment, endSegment),
       fCost: this.heuristic(startSegment, endSegment),
-      parent: null
+      parent: null,
     };
 
     openSet.push(startNode);
@@ -174,7 +182,7 @@ export class PathFinder {
             gCost: tentativeG,
             hCost,
             fCost: tentativeG + hCost,
-            parent: current
+            parent: current,
           };
 
           gCosts.set(neighborKey, tentativeG);
@@ -183,7 +191,7 @@ export class PathFinder {
       }
     }
 
-    return { found: false, path: [], totalDistance: 0, error: 'No path found' };
+    return { found: false, path: [], totalDistance: 0, error: "No path found" };
   }
 
   /**
@@ -191,14 +199,18 @@ export class PathFinder {
    */
   private getNeighbors(
     segment: Segment,
-    direction: 'forward' | 'backward'
-  ): Array<{ segmentId: string; direction: 'forward' | 'backward' }> {
-    const neighbors: Array<{ segmentId: string; direction: 'forward' | 'backward' }> = [];
+    direction: "forward" | "backward"
+  ): Array<{ segmentId: string; direction: "forward" | "backward" }> {
+    const neighbors: Array<{
+      segmentId: string;
+      direction: "forward" | "backward";
+    }> = [];
 
     // Get connected segments based on direction
-    const connectedIds = direction === 'forward'
-      ? segment.connectedSegments.forward
-      : segment.connectedSegments.backward;
+    const connectedIds =
+      direction === "forward"
+        ? segment.connectedSegments.forward
+        : segment.connectedSegments.backward;
 
     for (const neighborId of connectedIds) {
       const neighborSegment = this.graph.segments.get(neighborId);
@@ -206,16 +218,16 @@ export class PathFinder {
 
       // Determine which direction we enter the neighbor segment
       // Based on which node connects them
-      const exitNode = direction === 'forward' ? segment.endNodeId : segment.startNodeId;
+      const exitNode = direction === "forward" ? segment.endNodeId : segment.startNodeId;
 
       if (neighborSegment.startNodeId === exitNode) {
         // We enter from the start node, so we travel forward
-        neighbors.push({ segmentId: neighborId, direction: 'forward' });
+        neighbors.push({ segmentId: neighborId, direction: "forward" });
       } else if (neighborSegment.endNodeId === exitNode) {
         // We enter from the end node, so we travel backward
         // But only if the segment is bidirectional (not oneway)
         if (!neighborSegment.metadata.oneway) {
-          neighbors.push({ segmentId: neighborId, direction: 'backward' });
+          neighbors.push({ segmentId: neighborId, direction: "backward" });
         }
       }
     }
@@ -230,11 +242,11 @@ export class PathFinder {
     // Use midpoint of from segment to midpoint of to segment
     const fromMid: [number, number] = [
       (from.startCoord[0] + from.endCoord[0]) / 2,
-      (from.startCoord[1] + from.endCoord[1]) / 2
+      (from.startCoord[1] + from.endCoord[1]) / 2,
     ];
     const toMid: [number, number] = [
       (to.startCoord[0] + to.endCoord[0]) / 2,
-      (to.startCoord[1] + to.endCoord[1]) / 2
+      (to.startCoord[1] + to.endCoord[1]) / 2,
     ];
 
     return calculateDistance(fromMid[0], fromMid[1], toMid[0], toMid[1]);
@@ -251,7 +263,7 @@ export class PathFinder {
     while (current !== null) {
       path.unshift({
         segmentId: current.segmentId,
-        direction: current.direction
+        direction: current.direction,
       });
 
       const segment = this.graph.segments.get(current.segmentId);

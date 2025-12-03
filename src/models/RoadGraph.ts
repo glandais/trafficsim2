@@ -1,6 +1,6 @@
-import type { OSMNode } from './OSMNode';
-import type { OSMWay } from './OSMWay';
-import type { Segment } from './Segment';
+import type { OSMNode } from "./OSMNode";
+import type { OSMWay } from "./OSMWay";
+import type { Segment } from "./Segment";
 
 /**
  * The complete road network graph structure

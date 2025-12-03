@@ -1,5 +1,5 @@
-import L from 'leaflet';
-import type { DrivenVehicle, GeoPosition } from '../models';
+import L from "leaflet";
+import type { DrivenVehicle, GeoPosition } from "../models";
 
 /**
  * Rendered vehicle tracking
@@ -25,7 +25,7 @@ export class VehicleView {
     this.vehicleGroup = L.layerGroup().addTo(this.map);
 
     // Update vehicle icons on zoom
-    this.map.on('zoomend', () => this.updateAllIcons());
+    this.map.on("zoomend", () => this.updateAllIcons());
   }
 
   /**
@@ -71,7 +71,7 @@ export class VehicleView {
 
     const marker = L.marker([pos.lat, pos.lon], {
       icon,
-      interactive: false // Don't capture clicks
+      interactive: false, // Don't capture clicks
     });
 
     marker.addTo(this.vehicleGroup);
@@ -80,7 +80,7 @@ export class VehicleView {
       marker,
       previousPosition: { ...pos },
       targetPosition: { ...pos },
-      interpolationStart: performance.now()
+      interpolationStart: performance.now(),
     });
   }
 
@@ -92,17 +92,17 @@ export class VehicleView {
     // Scale vehicle size based on zoom (similar to roads)
     const scale = Math.pow(2, zoom - 14) * 0.4;
     const length = Math.max(10, 4.5 * scale); // 4.5m car length
-    const width = Math.max(6, 1.8 * scale);   // 1.8m car width
+    const width = Math.max(6, 1.8 * scale); // 1.8m car width
 
     return L.divIcon({
-      className: 'vehicle-marker',
+      className: "vehicle-marker",
       html: `<div class="vehicle-body" style="
         width: ${length}px;
         height: ${width}px;
         transform: rotate(${bearing - 90}deg);
       "></div>`,
       iconSize: [length, width],
-      iconAnchor: [length / 2, width / 2]
+      iconAnchor: [length / 2, width / 2],
     });
   }
 
@@ -130,9 +130,11 @@ export class VehicleView {
       const eased = this.easeOutQuad(t);
 
       // Interpolate lat/lon
-      const lat = rendered.previousPosition.lat +
+      const lat =
+        rendered.previousPosition.lat +
         (rendered.targetPosition.lat - rendered.previousPosition.lat) * eased;
-      const lon = rendered.previousPosition.lon +
+      const lon =
+        rendered.previousPosition.lon +
         (rendered.targetPosition.lon - rendered.previousPosition.lon) * eased;
 
       // Interpolate bearing with wrap-around

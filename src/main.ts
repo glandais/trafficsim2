@@ -1,29 +1,29 @@
-import 'leaflet/dist/leaflet.css';
-import { OSMParser, GraphBuilder } from './services';
-import { MapView, InfoPanel, VehicleView, SimulationPanel } from './views';
-import { MapController, SimulationController } from './controllers';
+import "leaflet/dist/leaflet.css";
+import { OSMParser, GraphBuilder } from "./services";
+import { MapView, InfoPanel, VehicleView, SimulationPanel } from "./views";
+import { MapController, SimulationController } from "./controllers";
 
 /**
  * Main application entry point
  */
 async function main(): Promise<void> {
-  const loadingEl = document.getElementById('loading');
+  const loadingEl = document.getElementById("loading");
 
   try {
     // Initialize views
-    const mapView = new MapView('map');
-    const infoPanel = new InfoPanel('info-panel');
+    const mapView = new MapView("map");
+    const infoPanel = new InfoPanel("info-panel");
 
     // Initialize controller
     const controller = new MapController(mapView, infoPanel);
 
     // Update loading message
     if (loadingEl) {
-      loadingEl.textContent = 'Loading OSM data...';
+      loadingEl.textContent = "Loading OSM data...";
     }
 
     // Fetch OSM data
-    const response = await fetch('/map.osm');
+    const response = await fetch("/map.osm");
     if (!response.ok) {
       throw new Error(`Failed to load OSM file: ${response.statusText}`);
     }
@@ -31,7 +31,7 @@ async function main(): Promise<void> {
 
     // Update loading message
     if (loadingEl) {
-      loadingEl.textContent = 'Parsing OSM data...';
+      loadingEl.textContent = "Parsing OSM data...";
     }
 
     // Parse OSM data
@@ -42,20 +42,16 @@ async function main(): Promise<void> {
 
     // Update loading message
     if (loadingEl) {
-      loadingEl.textContent = 'Building road graph...';
+      loadingEl.textContent = "Building road graph...";
     }
 
     // Build road graph
     const graphBuilder = new GraphBuilder();
-    const graph = graphBuilder.build(
-      parseResult.nodes,
-      parseResult.ways,
-      parseResult.bounds
-    );
+    const graph = graphBuilder.build(parseResult.nodes, parseResult.ways, parseResult.bounds);
 
     // Log statistics
     const stats = GraphBuilder.getStats(graph);
-    console.log('Road Graph Statistics:');
+    console.log("Road Graph Statistics:");
     console.log(`  Nodes: ${stats.nodeCount}`);
     console.log(`  Ways: ${stats.wayCount}`);
     console.log(`  Segments: ${stats.segmentCount}`);
@@ -67,32 +63,35 @@ async function main(): Promise<void> {
 
     // Initialize simulation components
     const vehicleView = new VehicleView(mapView.getMap());
-    const simulationPanel = new SimulationPanel('simulation-panel');
+    const simulationPanel = new SimulationPanel("simulation-panel");
     const simController = new SimulationController(graph, vehicleView, simulationPanel);
 
     // Hide loading indicator
     if (loadingEl) {
-      loadingEl.classList.add('hidden');
+      loadingEl.classList.add("hidden");
     }
 
-    console.log('Traffic Simulator initialized successfully');
+    console.log("Traffic Simulator initialized successfully");
 
     // Expose to global scope for debugging
-    (window as unknown as {
-      trafficSimGraph: typeof graph;
-      simController: typeof simController;
-    }).trafficSimGraph = graph;
-    (window as unknown as {
-      trafficSimGraph: typeof graph;
-      simController: typeof simController;
-    }).simController = simController;
-
+    (
+      window as unknown as {
+        trafficSimGraph: typeof graph;
+        simController: typeof simController;
+      }
+    ).trafficSimGraph = graph;
+    (
+      window as unknown as {
+        trafficSimGraph: typeof graph;
+        simController: typeof simController;
+      }
+    ).simController = simController;
   } catch (error) {
-    console.error('Failed to initialize Traffic Simulator:', error);
+    console.error("Failed to initialize Traffic Simulator:", error);
 
     if (loadingEl) {
-      loadingEl.textContent = `Error: ${error instanceof Error ? error.message : 'Unknown error'}`;
-      loadingEl.style.color = '#d32f2f';
+      loadingEl.textContent = `Error: ${error instanceof Error ? error.message : "Unknown error"}`;
+      loadingEl.style.color = "#d32f2f";
     }
   }
 }

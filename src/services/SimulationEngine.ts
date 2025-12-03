@@ -1,5 +1,5 @@
-import type { RoadGraph, Segment, DrivenVehicle, GeoPosition } from '../models';
-import { calculateBearing } from '../utils/geometry';
+import type { RoadGraph, Segment, DrivenVehicle, GeoPosition } from "../models";
+import { calculateBearing } from "../utils/geometry";
 
 /**
  * Simulation configuration
@@ -25,12 +25,12 @@ export interface SimulationState {
  * Simulation events
  */
 export type SimulationEvent =
-  | { type: 'tick'; deltaTime: number; vehicles: DrivenVehicle[] }
-  | { type: 'vehicleArrived'; vehicleId: string }
-  | { type: 'started' }
-  | { type: 'stopped' }
-  | { type: 'paused' }
-  | { type: 'resumed' };
+  | { type: "tick"; deltaTime: number; vehicles: DrivenVehicle[] }
+  | { type: "vehicleArrived"; vehicleId: string }
+  | { type: "started" }
+  | { type: "stopped" }
+  | { type: "paused" }
+  | { type: "resumed" };
 
 export type SimulationEventCallback = (event: SimulationEvent) => void;
 
@@ -59,7 +59,7 @@ export class SimulationEngine {
       targetFPS: 60,
       physicsTickRate: 60,
       maxDeltaTime: 0.1,
-      ...config
+      ...config,
     };
 
     this.state = {
@@ -67,7 +67,7 @@ export class SimulationEngine {
       isPaused: false,
       simulationTime: 0,
       timeScale: 1.0,
-      tickCount: 0
+      tickCount: 0,
     };
   }
 
@@ -103,7 +103,7 @@ export class SimulationEngine {
     this.lastTimestamp = performance.now();
     this.accumulator = 0;
 
-    this.emit({ type: 'started' });
+    this.emit({ type: "started" });
     this.gameLoop(this.lastTimestamp);
   }
 
@@ -119,7 +119,7 @@ export class SimulationEngine {
       this.animationFrameId = null;
     }
 
-    this.emit({ type: 'stopped' });
+    this.emit({ type: "stopped" });
   }
 
   /**
@@ -130,10 +130,10 @@ export class SimulationEngine {
 
     this.state.isPaused = !this.state.isPaused;
     if (this.state.isPaused) {
-      this.emit({ type: 'paused' });
+      this.emit({ type: "paused" });
     } else {
       this.lastTimestamp = performance.now();
-      this.emit({ type: 'resumed' });
+      this.emit({ type: "resumed" });
     }
   }
 
@@ -191,9 +191,9 @@ export class SimulationEngine {
 
     // Emit tick for rendering
     this.emit({
-      type: 'tick',
+      type: "tick",
       deltaTime,
-      vehicles: this.getVehicles()
+      vehicles: this.getVehicles(),
     });
   }
 
@@ -213,7 +213,7 @@ export class SimulationEngine {
 
     // Emit arrival events
     for (const vehicleId of arrivedVehicles) {
-      this.emit({ type: 'vehicleArrived', vehicleId });
+      this.emit({ type: "vehicleArrived", vehicleId });
     }
 
     this.state.simulationTime += deltaTime;
@@ -231,7 +231,12 @@ export class SimulationEngine {
     const desiredSpeed = this.calculateDesiredSpeed(drivenVehicle, segment);
 
     // 2. Apply acceleration
-    const newSpeed = this.applyAcceleration(vehicle, desiredSpeed, driver.behavior.aggressiveness, deltaTime);
+    const newSpeed = this.applyAcceleration(
+      vehicle,
+      desiredSpeed,
+      driver.behavior.aggressiveness,
+      deltaTime
+    );
 
     // 3. Update position
     const distanceTraveled = newSpeed * deltaTime;
@@ -261,7 +266,7 @@ export class SimulationEngine {
    * Apply acceleration to reach desired speed
    */
   private applyAcceleration(
-    vehicle: DrivenVehicle['vehicle'],
+    vehicle: DrivenVehicle["vehicle"],
     desiredSpeed: number,
     aggressiveness: number,
     deltaTime: number
@@ -273,7 +278,10 @@ export class SimulationEngine {
     if (speedDiff > 0) {
       acceleration = Math.min(speedDiff / deltaTime, vehicle.physics.maxAcceleration * accelFactor);
     } else {
-      acceleration = Math.max(speedDiff / deltaTime, -vehicle.physics.maxDeceleration * accelFactor);
+      acceleration = Math.max(
+        speedDiff / deltaTime,
+        -vehicle.physics.maxDeceleration * accelFactor
+      );
     }
 
     vehicle.state.acceleration = acceleration;
@@ -318,18 +326,18 @@ export class SimulationEngine {
             roadPosition.distanceAlongSegment = 0;
 
             // Determine direction based on how we enter the segment
-            const exitNode = roadPosition.direction === 'forward'
-              ? currentSegment.endNodeId
-              : currentSegment.startNodeId;
+            const exitNode =
+              roadPosition.direction === "forward"
+                ? currentSegment.endNodeId
+                : currentSegment.startNodeId;
 
             if (nextSegment.startNodeId === exitNode) {
-              roadPosition.direction = 'forward';
+              roadPosition.direction = "forward";
             } else {
-              roadPosition.direction = 'backward';
+              roadPosition.direction = "backward";
             }
 
             // Reset lane for new segment (stay in same relative lane)
-            const currentLanes = currentSegment.metadata.lanes || 1;
             const nextLanes = nextSegment.metadata.lanes || 1;
             roadPosition.lane = Math.min(roadPosition.lane, nextLanes - 1);
 
@@ -375,12 +383,10 @@ export class SimulationEngine {
     }
 
     // Get segment start/end based on direction
-    const [startLat, startLon] = roadPosition.direction === 'forward'
-      ? segment.startCoord
-      : segment.endCoord;
-    const [endLat, endLon] = roadPosition.direction === 'forward'
-      ? segment.endCoord
-      : segment.startCoord;
+    const [startLat, startLon] =
+      roadPosition.direction === "forward" ? segment.startCoord : segment.endCoord;
+    const [endLat, endLon] =
+      roadPosition.direction === "forward" ? segment.endCoord : segment.startCoord;
 
     // Interpolate along segment
     const ratio = roadPosition.distanceAlongSegment / segment.length;
@@ -407,13 +413,15 @@ export class SimulationEngine {
 
     // Apply perpendicular offset
     const perpBearing = (bearing + 90) % 360;
-    const offsetLat = laneOffset * Math.cos(perpBearing * Math.PI / 180) / 111000; // ~111km per degree lat
-    const offsetLon = laneOffset * Math.sin(perpBearing * Math.PI / 180) / (111000 * Math.cos(lat * Math.PI / 180));
+    const offsetLat = (laneOffset * Math.cos((perpBearing * Math.PI) / 180)) / 111000; // ~111km per degree lat
+    const offsetLon =
+      (laneOffset * Math.sin((perpBearing * Math.PI) / 180)) /
+      (111000 * Math.cos((lat * Math.PI) / 180));
 
     return {
       lat: lat + offsetLat,
       lon: lon + offsetLon,
-      bearing
+      bearing,
     };
   }
 

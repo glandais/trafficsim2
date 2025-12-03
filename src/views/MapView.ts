@@ -1,6 +1,6 @@
-import L from 'leaflet';
-import type { RoadGraph, Segment, RoadMetadata } from '../models';
-import { ROAD_COLORS, DEFAULT_ROAD_COLOR } from '../utils';
+import L from "leaflet";
+import type { RoadGraph, Segment, RoadMetadata } from "../models";
+import { ROAD_COLORS, DEFAULT_ROAD_COLOR } from "../utils";
 
 /**
  * Manages the Leaflet map and road rendering
@@ -16,20 +16,21 @@ export class MapView {
     // Initialize map with default view (will be adjusted after loading data)
     this.map = L.map(containerId, {
       zoomControl: true,
-      attributionControl: true
+      attributionControl: true,
     }).setView([47.178, -1.606], 14);
 
     // Add OpenStreetMap tiles
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-      maxZoom: 19
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution:
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      maxZoom: 19,
     }).addTo(this.map);
 
     // Create layer group for roads
     this.roadGroup = L.layerGroup().addTo(this.map);
 
     // Update road widths on zoom change
-    this.map.on('zoomend', () => this.updateRoadWidths());
+    this.map.on("zoomend", () => this.updateRoadWidths());
   }
 
   /**
@@ -59,18 +60,18 @@ export class MapView {
   private createRoadOutline(segment: Segment): L.Polyline {
     const coords: L.LatLngExpression[] = [
       [segment.startCoord[0], segment.startCoord[1]],
-      [segment.endCoord[0], segment.endCoord[1]]
+      [segment.endCoord[0], segment.endCoord[1]],
     ];
 
     const weight = this.getPixelWidth(segment.metadata.width) + 2;
 
     return L.polyline(coords, {
-      color: '#333333',
+      color: "#333333",
       weight,
       opacity: 0.9,
-      lineCap: 'round',
-      lineJoin: 'round',
-      interactive: false  // Outline doesn't receive clicks
+      lineCap: "round",
+      lineJoin: "round",
+      interactive: false, // Outline doesn't receive clicks
     });
   }
 
@@ -80,7 +81,7 @@ export class MapView {
   private createRoadPolyline(segment: Segment): L.Polyline {
     const coords: L.LatLngExpression[] = [
       [segment.startCoord[0], segment.startCoord[1]],
-      [segment.endCoord[0], segment.endCoord[1]]
+      [segment.endCoord[0], segment.endCoord[1]],
     ];
 
     const color = this.getRoadColor(segment.metadata.highway);
@@ -90,19 +91,20 @@ export class MapView {
       color,
       weight,
       opacity: 0.85,
-      lineCap: 'round',
-      lineJoin: 'round',
-      interactive: true
+      lineCap: "round",
+      lineJoin: "round",
+      interactive: true,
     });
 
     // Store segment data for interaction
     (polyline as L.Polyline & { segmentId: string; metadata: RoadMetadata }).segmentId = segment.id;
-    (polyline as L.Polyline & { segmentId: string; metadata: RoadMetadata }).metadata = segment.metadata;
+    (polyline as L.Polyline & { segmentId: string; metadata: RoadMetadata }).metadata =
+      segment.metadata;
     (polyline as L.Polyline & { meterWidth: number }).meterWidth = segment.metadata.width;
 
     // Add direct click handler
-    polyline.on('click', () => {
-      console.log('Polyline clicked:', segment.id);
+    polyline.on("click", () => {
+      console.log("Polyline clicked:", segment.id);
       if (this.clickCallback) {
         this.clickCallback(segment.id, segment.metadata);
       }
@@ -152,8 +154,10 @@ export class MapView {
 
     if (bounds.minLat === Infinity) {
       // Calculate bounds from nodes
-      let minLat = Infinity, maxLat = -Infinity;
-      let minLon = Infinity, maxLon = -Infinity;
+      let minLat = Infinity,
+        maxLat = -Infinity;
+      let minLon = Infinity,
+        maxLon = -Infinity;
 
       for (const node of graph.nodes.values()) {
         minLat = Math.min(minLat, node.lat);
@@ -165,13 +169,13 @@ export class MapView {
       if (minLat !== Infinity) {
         this.map.fitBounds([
           [minLat, minLon],
-          [maxLat, maxLon]
+          [maxLat, maxLon],
         ]);
       }
     } else {
       this.map.fitBounds([
         [bounds.minLat, bounds.minLon],
-        [bounds.maxLat, bounds.maxLon]
+        [bounds.maxLat, bounds.maxLon],
       ]);
     }
   }
@@ -189,10 +193,11 @@ export class MapView {
   highlightSegment(segmentId: string): void {
     // Clear previous selection
     if (this.selectedSegment) {
-      const prevMetadata = (this.selectedSegment as L.Polyline & { metadata: RoadMetadata }).metadata;
+      const prevMetadata = (this.selectedSegment as L.Polyline & { metadata: RoadMetadata })
+        .metadata;
       this.selectedSegment.setStyle({
         color: this.getRoadColor(prevMetadata.highway),
-        opacity: 0.85
+        opacity: 0.85,
       });
     }
 
@@ -200,8 +205,8 @@ export class MapView {
     const polyline = this.roadLayers.get(segmentId);
     if (polyline) {
       polyline.setStyle({
-        color: '#0066ff',
-        opacity: 1
+        color: "#0066ff",
+        opacity: 1,
       });
       polyline.bringToFront();
       this.selectedSegment = polyline;
@@ -216,7 +221,7 @@ export class MapView {
       const metadata = (this.selectedSegment as L.Polyline & { metadata: RoadMetadata }).metadata;
       this.selectedSegment.setStyle({
         color: this.getRoadColor(metadata.highway),
-        opacity: 0.85
+        opacity: 0.85,
       });
       this.selectedSegment = null;
     }

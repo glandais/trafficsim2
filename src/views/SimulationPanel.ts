@@ -1,4 +1,4 @@
-import type { SimulationState } from '../services/SimulationEngine';
+import type { SimulationState } from "../services/SimulationEngine";
 
 /**
  * UI panel for simulation controls
@@ -75,23 +75,23 @@ export class SimulationPanel {
    * Attach event listeners
    */
   private attachEventListeners(): void {
-    this.container.querySelector('#sim-start')?.addEventListener('click', () => {
+    this.container.querySelector("#sim-start")?.addEventListener("click", () => {
       this.onStartCallback?.();
     });
 
-    this.container.querySelector('#sim-stop')?.addEventListener('click', () => {
+    this.container.querySelector("#sim-stop")?.addEventListener("click", () => {
       this.onStopCallback?.();
     });
 
-    this.container.querySelector('#sim-pause')?.addEventListener('click', () => {
+    this.container.querySelector("#sim-pause")?.addEventListener("click", () => {
       this.onPauseCallback?.();
     });
 
-    this.container.querySelector('#sim-add-vehicle')?.addEventListener('click', () => {
+    this.container.querySelector("#sim-add-vehicle")?.addEventListener("click", () => {
       this.onAddVehicleCallback?.();
     });
 
-    this.container.querySelector('#sim-speed')?.addEventListener('change', (e) => {
+    this.container.querySelector("#sim-speed")?.addEventListener("change", (e) => {
       const scale = parseFloat((e.target as HTMLSelectElement).value);
       this.onTimeScaleCallback?.(scale);
     });
@@ -101,24 +101,24 @@ export class SimulationPanel {
    * Update display with current state
    */
   updateState(state: SimulationState, vehicleCount: number): void {
-    const statusEl = this.container.querySelector('#sim-status-value');
-    const countEl = this.container.querySelector('#sim-vehicle-count');
-    const timeEl = this.container.querySelector('#sim-time');
-    const startBtn = this.container.querySelector('#sim-start') as HTMLButtonElement;
-    const stopBtn = this.container.querySelector('#sim-stop') as HTMLButtonElement;
-    const pauseBtn = this.container.querySelector('#sim-pause') as HTMLButtonElement;
+    const statusEl = this.container.querySelector("#sim-status-value");
+    const countEl = this.container.querySelector("#sim-vehicle-count");
+    const timeEl = this.container.querySelector("#sim-time");
+    const startBtn = this.container.querySelector("#sim-start") as HTMLButtonElement;
+    const stopBtn = this.container.querySelector("#sim-stop") as HTMLButtonElement;
+    const pauseBtn = this.container.querySelector("#sim-pause") as HTMLButtonElement;
 
     // Update status text
     if (statusEl) {
       if (state.isPaused) {
-        statusEl.textContent = 'Paused';
-        statusEl.className = 'value status-paused';
+        statusEl.textContent = "Paused";
+        statusEl.className = "value status-paused";
       } else if (state.isRunning) {
         statusEl.textContent = `Running (${state.timeScale}x)`;
-        statusEl.className = 'value status-running';
+        statusEl.className = "value status-running";
       } else {
-        statusEl.textContent = 'Stopped';
-        statusEl.className = 'value status-stopped';
+        statusEl.textContent = "Stopped";
+        statusEl.className = "value status-stopped";
       }
     }
 
@@ -130,7 +130,7 @@ export class SimulationPanel {
     if (stopBtn) stopBtn.disabled = !state.isRunning;
     if (pauseBtn) {
       pauseBtn.disabled = !state.isRunning;
-      pauseBtn.textContent = state.isPaused ? 'Resume' : 'Pause';
+      pauseBtn.textContent = state.isPaused ? "Resume" : "Pause";
     }
   }
 
@@ -141,7 +141,7 @@ export class SimulationPanel {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     if (mins > 0) {
-      return `${mins}:${secs.toFixed(1).padStart(4, '0')}`;
+      return `${mins}:${secs.toFixed(1).padStart(4, "0")}`;
     }
     return `${secs.toFixed(1)}s`;
   }

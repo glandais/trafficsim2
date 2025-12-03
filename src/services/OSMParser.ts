@@ -1,6 +1,6 @@
-import type { OSMNode, OSMWay, RoadMetadata } from '../models';
-import { DRIVEABLE_HIGHWAYS } from '../models';
-import { deriveRoadWidth } from '../utils';
+import type { OSMNode, OSMWay, RoadMetadata } from "../models";
+import { DRIVEABLE_HIGHWAYS } from "../models";
+import { deriveRoadWidth } from "../utils";
 
 /**
  * Parser result containing nodes and ways
@@ -26,7 +26,7 @@ export class OSMParser {
     minLat: Infinity,
     maxLat: -Infinity,
     minLon: Infinity,
-    maxLon: -Infinity
+    maxLon: -Infinity,
   };
 
   /**
@@ -34,10 +34,10 @@ export class OSMParser {
    */
   parse(osmXml: string): ParseResult {
     const parser = new DOMParser();
-    const doc = parser.parseFromString(osmXml, 'application/xml');
+    const doc = parser.parseFromString(osmXml, "application/xml");
 
     // Check for parsing errors
-    const parseError = doc.querySelector('parsererror');
+    const parseError = doc.querySelector("parsererror");
     if (parseError) {
       throw new Error(`XML parsing error: ${parseError.textContent}`);
     }
@@ -54,7 +54,7 @@ export class OSMParser {
     return {
       nodes: this.nodes,
       ways: this.ways,
-      bounds: this.bounds
+      bounds: this.bounds,
     };
   }
 
@@ -62,13 +62,13 @@ export class OSMParser {
    * Parse the bounds element if present
    */
   private parseBounds(doc: Document): void {
-    const boundsEl = doc.querySelector('bounds');
+    const boundsEl = doc.querySelector("bounds");
     if (boundsEl) {
       this.bounds = {
-        minLat: parseFloat(boundsEl.getAttribute('minlat') || '0'),
-        maxLat: parseFloat(boundsEl.getAttribute('maxlat') || '0'),
-        minLon: parseFloat(boundsEl.getAttribute('minlon') || '0'),
-        maxLon: parseFloat(boundsEl.getAttribute('maxlon') || '0')
+        minLat: parseFloat(boundsEl.getAttribute("minlat") || "0"),
+        maxLat: parseFloat(boundsEl.getAttribute("maxlat") || "0"),
+        minLon: parseFloat(boundsEl.getAttribute("minlon") || "0"),
+        maxLon: parseFloat(boundsEl.getAttribute("maxlon") || "0"),
       };
     }
   }
@@ -77,12 +77,12 @@ export class OSMParser {
    * Parse all node elements
    */
   private parseNodes(doc: Document): void {
-    const nodeElements = doc.querySelectorAll('node');
+    const nodeElements = doc.querySelectorAll("node");
 
     for (const nodeEl of nodeElements) {
-      const id = nodeEl.getAttribute('id');
-      const lat = nodeEl.getAttribute('lat');
-      const lon = nodeEl.getAttribute('lon');
+      const id = nodeEl.getAttribute("id");
+      const lat = nodeEl.getAttribute("lat");
+      const lon = nodeEl.getAttribute("lon");
 
       if (!id || !lat || !lon) continue;
 
@@ -90,7 +90,7 @@ export class OSMParser {
         id,
         lat: parseFloat(lat),
         lon: parseFloat(lon),
-        tags: this.parseTags(nodeEl)
+        tags: this.parseTags(nodeEl),
       };
 
       this.nodes.set(node.id, node);
@@ -109,14 +109,14 @@ export class OSMParser {
    * Parse way elements, filtering for driveable roads
    */
   private parseWays(doc: Document): void {
-    const wayElements = doc.querySelectorAll('way');
+    const wayElements = doc.querySelectorAll("way");
 
     for (const wayEl of wayElements) {
-      const id = wayEl.getAttribute('id');
+      const id = wayEl.getAttribute("id");
       if (!id) continue;
 
       const tags = this.parseTags(wayEl);
-      const highway = tags.get('highway');
+      const highway = tags.get("highway");
 
       // Filter: only include driveable roads
       if (!highway || !DRIVEABLE_HIGHWAYS.has(highway)) {
@@ -124,8 +124,8 @@ export class OSMParser {
       }
 
       // Get node references
-      const nodeRefs = Array.from(wayEl.querySelectorAll('nd'))
-        .map(nd => nd.getAttribute('ref'))
+      const nodeRefs = Array.from(wayEl.querySelectorAll("nd"))
+        .map((nd) => nd.getAttribute("ref"))
         .filter((ref): ref is string => ref !== null && this.nodes.has(ref));
 
       // Need at least 2 nodes to form a road segment
@@ -135,7 +135,7 @@ export class OSMParser {
         id,
         nodeRefs,
         tags,
-        metadata: this.deriveMetadata(tags)
+        metadata: this.deriveMetadata(tags),
       };
 
       this.ways.set(way.id, way);
@@ -148,9 +148,9 @@ export class OSMParser {
   private parseTags(element: Element): Map<string, string> {
     const tags = new Map<string, string>();
 
-    for (const tag of element.querySelectorAll('tag')) {
-      const k = tag.getAttribute('k');
-      const v = tag.getAttribute('v');
+    for (const tag of element.querySelectorAll("tag")) {
+      const k = tag.getAttribute("k");
+      const v = tag.getAttribute("v");
       if (k && v) {
         tags.set(k, v);
       }
@@ -163,21 +163,21 @@ export class OSMParser {
    * Derive road metadata from OSM tags
    */
   private deriveMetadata(tags: Map<string, string>): RoadMetadata {
-    const highway = tags.get('highway') || 'road';
-    const lanesStr = tags.get('lanes');
+    const highway = tags.get("highway") || "road";
+    const lanesStr = tags.get("lanes");
     const lanes = lanesStr ? parseInt(lanesStr, 10) : undefined;
 
     return {
-      name: tags.get('name'),
+      name: tags.get("name"),
       highway,
       lanes,
-      maxspeed: this.parseMaxspeed(tags.get('maxspeed')),
-      width: deriveRoadWidth(tags.get('width'), lanes, highway),
+      maxspeed: this.parseMaxspeed(tags.get("maxspeed")),
+      width: deriveRoadWidth(tags.get("width"), lanes, highway),
       oneway: this.isOneway(tags),
-      surface: tags.get('surface'),
-      junction: tags.get('junction') as 'roundabout' | 'circular' | undefined,
-      bridge: tags.get('bridge') === 'yes',
-      tunnel: tags.get('tunnel') === 'yes'
+      surface: tags.get("surface"),
+      junction: tags.get("junction") as "roundabout" | "circular" | undefined,
+      bridge: tags.get("bridge") === "yes",
+      tunnel: tags.get("tunnel") === "yes",
     };
   }
 
@@ -193,7 +193,7 @@ export class OSMParser {
       let speed = parseInt(match[1], 10);
 
       // Convert mph to km/h if needed
-      if (value.toLowerCase().includes('mph')) {
+      if (value.toLowerCase().includes("mph")) {
         speed = Math.round(speed * 1.60934);
       }
 
@@ -202,10 +202,10 @@ export class OSMParser {
 
     // Handle special values
     const specialSpeeds: Record<string, number> = {
-      'walk': 5,
-      'FR:walk': 5,
-      'FR:urban': 50,
-      'FR:rural': 80
+      walk: 5,
+      "FR:walk": 5,
+      "FR:urban": 50,
+      "FR:rural": 80,
     };
 
     return specialSpeeds[value];
@@ -215,23 +215,23 @@ export class OSMParser {
    * Determine if a way is oneway
    */
   private isOneway(tags: Map<string, string>): boolean {
-    const oneway = tags.get('oneway');
-    const junction = tags.get('junction');
-    const highway = tags.get('highway');
+    const oneway = tags.get("oneway");
+    const junction = tags.get("junction");
+    const highway = tags.get("highway");
 
     // Explicit oneway tag
-    if (oneway === 'yes' || oneway === '1' || oneway === 'true') {
+    if (oneway === "yes" || oneway === "1" || oneway === "true") {
       return true;
     }
 
     // Roundabouts are always oneway
-    if (junction === 'roundabout' || junction === 'circular') {
+    if (junction === "roundabout" || junction === "circular") {
       return true;
     }
 
     // Motorway links are typically oneway
-    if (highway === 'motorway' || highway === 'motorway_link') {
-      return oneway !== 'no';
+    if (highway === "motorway" || highway === "motorway_link") {
+      return oneway !== "no";
     }
 
     return false;

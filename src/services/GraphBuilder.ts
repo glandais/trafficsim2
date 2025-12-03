@@ -1,5 +1,5 @@
-import type { OSMNode, OSMWay, Segment, RoadGraph } from '../models';
-import { calculateNodeDistance } from '../utils';
+import type { OSMNode, OSMWay, Segment, RoadGraph } from "../models";
+import { calculateNodeDistance } from "../utils";
 
 /**
  * Builds a connectivity graph from parsed OSM data
@@ -39,8 +39,8 @@ export class GraphBuilder {
           metadata: way.metadata,
           connectedSegments: {
             forward: [],
-            backward: []
-          }
+            backward: [],
+          },
         };
 
         segments.set(segmentId, segment);
@@ -96,18 +96,14 @@ export class GraphBuilder {
       segments,
       nodeToSegments,
       intersections,
-      bounds
+      bounds,
     };
   }
 
   /**
    * Add a segment ID to the adjacency list for a node
    */
-  private addToAdjacency(
-    map: Map<string, string[]>,
-    nodeId: string,
-    segmentId: string
-  ): void {
+  private addToAdjacency(map: Map<string, string[]>, nodeId: string, segmentId: string): void {
     const existing = map.get(nodeId);
     if (existing) {
       existing.push(segmentId);
@@ -149,7 +145,7 @@ export class GraphBuilder {
       wayCount: graph.ways.size,
       segmentCount: graph.segments.size,
       intersectionCount: graph.intersections.size,
-      totalRoadLength: Math.round(totalRoadLength)
+      totalRoadLength: Math.round(totalRoadLength),
     };
   }
 }

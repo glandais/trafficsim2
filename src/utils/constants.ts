@@ -4,25 +4,25 @@
  */
 export const DEFAULT_WIDTHS: Record<string, number> = {
   // Major roads (typically 2+ lanes each direction)
-  motorway: 14.0,        // 4 lanes @ 3.5m
-  motorway_link: 7.0,    // 2 lanes
-  trunk: 10.5,           // 3 lanes
-  trunk_link: 5.0,       // 1-2 lanes
-  primary: 7.0,          // 2 lanes
-  primary_link: 4.0,     // 1 lane
+  motorway: 14.0, // 4 lanes @ 3.5m
+  motorway_link: 7.0, // 2 lanes
+  trunk: 10.5, // 3 lanes
+  trunk_link: 5.0, // 1-2 lanes
+  primary: 7.0, // 2 lanes
+  primary_link: 4.0, // 1 lane
 
   // Secondary roads
-  secondary: 7.0,        // 2 lanes
+  secondary: 7.0, // 2 lanes
   secondary_link: 4.0,
-  tertiary: 6.0,         // 2 narrow lanes
+  tertiary: 6.0, // 2 narrow lanes
   tertiary_link: 3.5,
 
   // Local roads
-  residential: 5.5,      // Narrower urban streets
+  residential: 5.5, // Narrower urban streets
   unclassified: 5.0,
-  service: 4.0,          // Driveways, parking lots
-  living_street: 4.5,    // Shared space
-  road: 5.0              // Unknown type fallback
+  service: 4.0, // Driveways, parking lots
+  living_street: 4.5, // Shared space
+  road: 5.0, // Unknown type fallback
 };
 
 /**
@@ -34,27 +34,27 @@ export const LANE_WIDTH = 3.5;
  * Colors for rendering roads by highway type
  */
 export const ROAD_COLORS: Record<string, string> = {
-  motorway: '#e892a2',
-  motorway_link: '#e892a2',
-  trunk: '#f9b29c',
-  trunk_link: '#f9b29c',
-  primary: '#fcd6a4',
-  primary_link: '#fcd6a4',
-  secondary: '#f7fabf',
-  secondary_link: '#f7fabf',
-  tertiary: '#ffffff',
-  tertiary_link: '#ffffff',
-  residential: '#ffffff',
-  unclassified: '#ffffff',
-  service: '#cccccc',
-  living_street: '#ededed',
-  road: '#dddddd'
+  motorway: "#e892a2",
+  motorway_link: "#e892a2",
+  trunk: "#f9b29c",
+  trunk_link: "#f9b29c",
+  primary: "#fcd6a4",
+  primary_link: "#fcd6a4",
+  secondary: "#f7fabf",
+  secondary_link: "#f7fabf",
+  tertiary: "#ffffff",
+  tertiary_link: "#ffffff",
+  residential: "#ffffff",
+  unclassified: "#ffffff",
+  service: "#cccccc",
+  living_street: "#ededed",
+  road: "#dddddd",
 };
 
 /**
  * Default color for unknown road types
  */
-export const DEFAULT_ROAD_COLOR = '#888888';
+export const DEFAULT_ROAD_COLOR = "#888888";
 
 /**
  * Derive road width from available OSM tags

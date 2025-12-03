@@ -4,16 +4,16 @@ import type {
   Vehicle,
   Driver,
   RoadPosition,
-  GeoPosition
-} from '../models';
+  GeoPosition,
+} from "../models";
 import {
   createDefaultCarPhysics,
   createRandomDriverBehavior,
-  createInitialLaneChangeState
-} from '../models';
-import { PathFinder, SimulationEngine } from '../services';
-import { VehicleView, SimulationPanel } from '../views';
-import { calculateBearing } from '../utils/geometry';
+  createInitialLaneChangeState,
+} from "../models";
+import { PathFinder, SimulationEngine } from "../services";
+import { VehicleView, SimulationPanel } from "../views";
+import { calculateBearing } from "../utils/geometry";
 
 /**
  * Controller for simulation
@@ -27,11 +27,7 @@ export class SimulationController {
 
   private vehicleIdCounter: number = 0;
 
-  constructor(
-    graph: RoadGraph,
-    vehicleView: VehicleView,
-    simulationPanel: SimulationPanel
-  ) {
+  constructor(graph: RoadGraph, vehicleView: VehicleView, simulationPanel: SimulationPanel) {
     this.graph = graph;
     this.vehicleView = vehicleView;
     this.simulationPanel = simulationPanel;
@@ -56,11 +52,11 @@ export class SimulationController {
     // Engine events
     this.engine.onEvent((event) => {
       switch (event.type) {
-        case 'tick':
+        case "tick":
           this.vehicleView.updateVehicles(event.vehicles);
           this.updatePanel();
           break;
-        case 'vehicleArrived':
+        case "vehicleArrived":
           console.log(`Vehicle ${event.vehicleId} arrived at destination`);
           this.engine.removeVehicle(event.vehicleId);
           break;
@@ -118,17 +114,19 @@ export class SimulationController {
       if (pathResult.found && pathResult.path.length > 1) {
         const drivenVehicle = this.createDrivenVehicle(
           startSegmentId,
-          pathResult.path.map(p => p.segmentId),
+          pathResult.path.map((p) => p.segmentId),
           pathResult.path[0].direction
         );
 
         this.engine.addVehicle(drivenVehicle);
-        console.log(`Added vehicle ${drivenVehicle.vehicle.id} with route of ${pathResult.path.length} segments (${(pathResult.totalDistance / 1000).toFixed(2)} km)`);
+        console.log(
+          `Added vehicle ${drivenVehicle.vehicle.id} with route of ${pathResult.path.length} segments (${(pathResult.totalDistance / 1000).toFixed(2)} km)`
+        );
         return;
       }
     }
 
-    console.warn('Could not find valid path after', maxAttempts, 'attempts');
+    console.warn("Could not find valid path after", maxAttempts, "attempts");
   }
 
   /**
@@ -137,18 +135,14 @@ export class SimulationController {
   private createDrivenVehicle(
     startSegmentId: string,
     route: string[],
-    direction: 'forward' | 'backward'
+    direction: "forward" | "backward"
   ): DrivenVehicle {
     const segment = this.graph.segments.get(startSegmentId)!;
     const vehicleId = `vehicle-${++this.vehicleIdCounter}`;
 
     // Calculate initial geo position
-    const [startLat, startLon] = direction === 'forward'
-      ? segment.startCoord
-      : segment.endCoord;
-    const [endLat, endLon] = direction === 'forward'
-      ? segment.endCoord
-      : segment.startCoord;
+    const [startLat, startLon] = direction === "forward" ? segment.startCoord : segment.endCoord;
+    const [endLat, endLon] = direction === "forward" ? segment.endCoord : segment.startCoord;
     const bearing = calculateBearing(startLat, startLon, endLat, endLon);
 
     // Initial road position
@@ -156,14 +150,14 @@ export class SimulationController {
       segmentId: startSegmentId,
       distanceAlongSegment: 0,
       direction,
-      lane: 0 // Start in rightmost lane
+      lane: 0, // Start in rightmost lane
     };
 
     // Initial geo position
     const geoPosition: GeoPosition = {
       lat: startLat,
       lon: startLon,
-      bearing
+      bearing,
     };
 
     // Create vehicle
@@ -175,8 +169,8 @@ export class SimulationController {
         acceleration: 0,
         roadPosition,
         geoPosition,
-        laneChange: createInitialLaneChangeState()
-      }
+        laneChange: createInitialLaneChangeState(),
+      },
     };
 
     // Create driver
@@ -186,8 +180,8 @@ export class SimulationController {
       navigation: {
         route,
         currentRouteIndex: 0,
-        hasArrived: false
-      }
+        hasArrived: false,
+      },
     };
 
     return { vehicle, driver };
@@ -197,10 +191,7 @@ export class SimulationController {
    * Update panel with current state
    */
   private updatePanel(): void {
-    this.simulationPanel.updateState(
-      this.engine.getState(),
-      this.engine.getVehicles().length
-    );
+    this.simulationPanel.updateState(this.engine.getState(), this.engine.getVehicles().length);
   }
 
   /**

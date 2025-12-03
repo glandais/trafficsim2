@@ -1,4 +1,4 @@
-import type { RoadMetadata, RoadGraph } from '../models';
+import type { RoadMetadata, RoadGraph } from "../models";
 
 /**
  * Displays information about selected road segments
@@ -30,7 +30,7 @@ export class InfoPanel {
 
     const html = `
       <button class="close-btn" aria-label="Close">&times;</button>
-      <h3>${metadata.name || 'Unnamed Road'}</h3>
+      <h3>${metadata.name || "Unnamed Road"}</h3>
 
       <div class="info-row">
         <span class="label">Type</span>
@@ -42,47 +42,69 @@ export class InfoPanel {
         <span class="value">${metadata.width.toFixed(1)} m</span>
       </div>
 
-      ${metadata.lanes ? `
+      ${
+        metadata.lanes
+          ? `
       <div class="info-row">
         <span class="label">Lanes</span>
         <span class="value">${metadata.lanes}</span>
       </div>
-      ` : ''}
+      `
+          : ""
+      }
 
-      ${metadata.maxspeed ? `
+      ${
+        metadata.maxspeed
+          ? `
       <div class="info-row">
         <span class="label">Speed Limit</span>
         <span class="value">${metadata.maxspeed} km/h</span>
       </div>
-      ` : ''}
+      `
+          : ""
+      }
 
       <div class="info-row">
         <span class="label">Direction</span>
-        <span class="value">${metadata.oneway ? 'One-way' : 'Both ways'}</span>
+        <span class="value">${metadata.oneway ? "One-way" : "Both ways"}</span>
       </div>
 
-      ${metadata.surface ? `
+      ${
+        metadata.surface
+          ? `
       <div class="info-row">
         <span class="label">Surface</span>
         <span class="value">${this.formatSurface(metadata.surface)}</span>
       </div>
-      ` : ''}
+      `
+          : ""
+      }
 
-      ${metadata.bridge ? `
+      ${
+        metadata.bridge
+          ? `
       <div class="info-row">
         <span class="label">Structure</span>
         <span class="value">Bridge</span>
       </div>
-      ` : ''}
+      `
+          : ""
+      }
 
-      ${metadata.tunnel ? `
+      ${
+        metadata.tunnel
+          ? `
       <div class="info-row">
         <span class="label">Structure</span>
         <span class="value">Tunnel</span>
       </div>
-      ` : ''}
+      `
+          : ""
+      }
 
-      ${segment ? `
+      ${
+        segment
+          ? `
       <div class="info-row">
         <span class="label">Length</span>
         <span class="value">${this.formatLength(segment.length)}</span>
@@ -92,37 +114,39 @@ export class InfoPanel {
         <span class="label">Connections</span>
         <span class="value">${segment.connectedSegments.forward.length + segment.connectedSegments.backward.length}</span>
       </div>
-      ` : ''}
+      `
+          : ""
+      }
     `;
 
     this.container.innerHTML = html;
-    this.container.classList.add('visible');
+    this.container.classList.add("visible");
 
     // Add close button handler
-    const closeBtn = this.container.querySelector('.close-btn');
-    closeBtn?.addEventListener('click', () => this.hide());
+    const closeBtn = this.container.querySelector(".close-btn");
+    closeBtn?.addEventListener("click", () => this.hide());
   }
 
   /**
    * Hide the info panel
    */
   hide(): void {
-    this.container.classList.remove('visible');
+    this.container.classList.remove("visible");
   }
 
   /**
    * Check if panel is visible
    */
   isVisible(): boolean {
-    return this.container.classList.contains('visible');
+    return this.container.classList.contains("visible");
   }
 
   /**
    * Set close callback
    */
   onClose(callback: () => void): void {
-    this.container.addEventListener('click', (e) => {
-      if ((e.target as HTMLElement).classList.contains('close-btn')) {
+    this.container.addEventListener("click", (e) => {
+      if ((e.target as HTMLElement).classList.contains("close-btn")) {
         callback();
       }
     });
@@ -133,21 +157,21 @@ export class InfoPanel {
    */
   private formatHighwayType(highway: string): string {
     const formats: Record<string, string> = {
-      motorway: 'Motorway',
-      motorway_link: 'Motorway Link',
-      trunk: 'Trunk Road',
-      trunk_link: 'Trunk Link',
-      primary: 'Primary Road',
-      primary_link: 'Primary Link',
-      secondary: 'Secondary Road',
-      secondary_link: 'Secondary Link',
-      tertiary: 'Tertiary Road',
-      tertiary_link: 'Tertiary Link',
-      residential: 'Residential',
-      unclassified: 'Unclassified',
-      service: 'Service Road',
-      living_street: 'Living Street',
-      road: 'Road'
+      motorway: "Motorway",
+      motorway_link: "Motorway Link",
+      trunk: "Trunk Road",
+      trunk_link: "Trunk Link",
+      primary: "Primary Road",
+      primary_link: "Primary Link",
+      secondary: "Secondary Road",
+      secondary_link: "Secondary Link",
+      tertiary: "Tertiary Road",
+      tertiary_link: "Tertiary Link",
+      residential: "Residential",
+      unclassified: "Unclassified",
+      service: "Service Road",
+      living_street: "Living Street",
+      road: "Road",
     };
 
     return formats[highway] || highway;
@@ -158,13 +182,13 @@ export class InfoPanel {
    */
   private formatSurface(surface: string): string {
     const formats: Record<string, string> = {
-      asphalt: 'Asphalt',
-      concrete: 'Concrete',
-      paved: 'Paved',
-      unpaved: 'Unpaved',
-      gravel: 'Gravel',
-      cobblestone: 'Cobblestone',
-      paving_stones: 'Paving Stones'
+      asphalt: "Asphalt",
+      concrete: "Concrete",
+      paved: "Paved",
+      unpaved: "Unpaved",
+      gravel: "Gravel",
+      cobblestone: "Cobblestone",
+      paving_stones: "Paving Stones",
     };
 
     return formats[surface] || surface;

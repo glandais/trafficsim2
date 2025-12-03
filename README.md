@@ -8,7 +8,7 @@ A real-time traffic simulation built with TypeScript and Leaflet, using OpenStre
 - **Road Network Visualization**: Displays roads with appropriate styling based on road type
 - **Vehicle Simulation**: Vehicles with physics-based movement navigate from random point A to B
 - **Driver Behavior**: Configurable driver characteristics (reflex time, aggressiveness, speed preference)
-- **A* Pathfinding**: Efficient route calculation using road segment connectivity
+- **A\* Pathfinding**: Efficient route calculation using road segment connectivity
 - **Real-time Animation**: Smooth 60fps rendering with position interpolation
 - **Time Control**: Adjustable simulation speed (0.25x to 10x)
 
@@ -77,18 +77,21 @@ src/
 ## Data Models
 
 ### Vehicle Physics
+
 - `maxSpeed`: Maximum velocity (m/s)
 - `maxAcceleration`: Maximum acceleration (m/s²)
 - `maxDeceleration`: Maximum braking (m/s²)
 - `length/width`: Physical dimensions (meters)
 
 ### Driver Behavior
+
 - `reflexTime`: Reaction delay (0.5-2.0 seconds)
 - `aggressiveness`: Driving intensity (0-1)
 - `preferredSpeedFactor`: Speed limit multiplier (0.8-1.2)
 - `laneChangeTendency`: Willingness to change lanes (0-1)
 
 ### Road Position
+
 - `segmentId`: Current road segment
 - `distanceAlongSegment`: Progress along segment (meters)
 - `direction`: Forward or backward along segment
@@ -97,6 +100,7 @@ src/
 ## OSM Data
 
 Place your OSM data file as `public/map.osm`. You can export OSM data from:
+
 - https://www.openstreetmap.org/export
 - https://overpass-turbo.eu/
 

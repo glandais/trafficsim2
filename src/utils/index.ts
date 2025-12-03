@@ -3,11 +3,7 @@ export {
   LANE_WIDTH,
   ROAD_COLORS,
   DEFAULT_ROAD_COLOR,
-  deriveRoadWidth
-} from './constants';
+  deriveRoadWidth,
+} from "./constants";
 
-export {
-  calculateDistance,
-  calculateNodeDistance,
-  calculateBearing
-} from './geometry';
+export { calculateDistance, calculateNodeDistance, calculateBearing } from "./geometry";

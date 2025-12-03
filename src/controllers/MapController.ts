@@ -1,6 +1,6 @@
-import type { RoadGraph, RoadMetadata } from '../models';
-import { MapView } from '../views/MapView';
-import { InfoPanel } from '../views/InfoPanel';
+import type { RoadGraph, RoadMetadata } from "../models";
+import { MapView } from "../views/MapView";
+import { InfoPanel } from "../views/InfoPanel";
 
 /**
  * Controller for map interactions
@@ -35,7 +35,7 @@ export class MapController {
     });
 
     // Click on map background to clear selection
-    this.mapView.getMap().on('click', () => {
+    this.mapView.getMap().on("click", () => {
       // Skip if we just clicked on a road (flag set by road click handler)
       if (this.justClickedRoad) {
         this.justClickedRoad = false;
@@ -47,8 +47,8 @@ export class MapController {
     });
 
     // Keyboard handler for escape
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && this.selectedSegmentId) {
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && this.selectedSegmentId) {
         this.clearSelection();
       }
     });

@@ -2,21 +2,21 @@
  * Highway types supported for traffic simulation
  */
 export enum HighwayType {
-  MOTORWAY = 'motorway',
-  MOTORWAY_LINK = 'motorway_link',
-  TRUNK = 'trunk',
-  TRUNK_LINK = 'trunk_link',
-  PRIMARY = 'primary',
-  PRIMARY_LINK = 'primary_link',
-  SECONDARY = 'secondary',
-  SECONDARY_LINK = 'secondary_link',
-  TERTIARY = 'tertiary',
-  TERTIARY_LINK = 'tertiary_link',
-  RESIDENTIAL = 'residential',
-  UNCLASSIFIED = 'unclassified',
-  SERVICE = 'service',
-  LIVING_STREET = 'living_street',
-  ROAD = 'road'
+  MOTORWAY = "motorway",
+  MOTORWAY_LINK = "motorway_link",
+  TRUNK = "trunk",
+  TRUNK_LINK = "trunk_link",
+  PRIMARY = "primary",
+  PRIMARY_LINK = "primary_link",
+  SECONDARY = "secondary",
+  SECONDARY_LINK = "secondary_link",
+  TERTIARY = "tertiary",
+  TERTIARY_LINK = "tertiary_link",
+  RESIDENTIAL = "residential",
+  UNCLASSIFIED = "unclassified",
+  SERVICE = "service",
+  LIVING_STREET = "living_street",
+  ROAD = "road",
 }
 
 /**
@@ -37,7 +37,7 @@ export const DRIVEABLE_HIGHWAYS = new Set<string>([
   HighwayType.UNCLASSIFIED,
   HighwayType.SERVICE,
   HighwayType.LIVING_STREET,
-  HighwayType.ROAD
+  HighwayType.ROAD,
 ]);
 
 /**
@@ -47,11 +47,11 @@ export interface RoadMetadata {
   name?: string;
   highway: string;
   lanes?: number;
-  maxspeed?: number;        // km/h
-  width: number;            // meters (derived or explicit)
+  maxspeed?: number; // km/h
+  width: number; // meters (derived or explicit)
   oneway: boolean;
   surface?: string;
-  junction?: 'roundabout' | 'circular';
+  junction?: "roundabout" | "circular";
   bridge?: boolean;
   tunnel?: boolean;
 }
