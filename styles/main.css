@@ -1,0 +1,234 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+#app {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+#map {
+  width: 100%;
+  height: 100%;
+}
+
+#info-panel {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 300px;
+  max-height: 400px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  padding: 16px;
+  z-index: 1000;
+  display: none;
+  overflow-y: auto;
+}
+
+#info-panel.visible {
+  display: block;
+}
+
+#info-panel h3 {
+  margin-bottom: 12px;
+  color: #333;
+  font-size: 16px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 8px;
+}
+
+#info-panel .info-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+  font-size: 13px;
+}
+
+#info-panel .info-row .label {
+  color: #666;
+}
+
+#info-panel .info-row .value {
+  color: #333;
+  font-weight: 500;
+}
+
+#info-panel .close-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: #999;
+}
+
+#info-panel .close-btn:hover {
+  color: #333;
+}
+
+#loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  padding: 20px 40px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  z-index: 1001;
+  font-size: 16px;
+  color: #333;
+}
+
+#loading.hidden {
+  display: none;
+}
+
+/* Road highlighting */
+.road-highlight {
+  stroke: #0066ff !important;
+  stroke-opacity: 1 !important;
+}
+
+/* Simulation Panel */
+#simulation-panel {
+  position: absolute;
+  top: 10px;
+  left: 60px;
+  width: 200px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  padding: 16px;
+  z-index: 1000;
+}
+
+#simulation-panel h3 {
+  margin: 0 0 12px 0;
+  color: #333;
+  font-size: 16px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 8px;
+}
+
+#simulation-panel .sim-controls {
+  margin-bottom: 12px;
+}
+
+#simulation-panel .control-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+  align-items: center;
+}
+
+#simulation-panel .control-row label {
+  font-size: 13px;
+  color: #666;
+}
+
+#simulation-panel .control-row select {
+  flex: 1;
+  padding: 4px 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+#simulation-panel .btn {
+  padding: 6px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #f5f5f5;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s;
+}
+
+#simulation-panel .btn:hover:not(:disabled) {
+  background: #e8e8e8;
+}
+
+#simulation-panel .btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+#simulation-panel .btn-primary {
+  background: #2196f3;
+  color: white;
+  border-color: #1976d2;
+}
+
+#simulation-panel .btn-primary:hover:not(:disabled) {
+  background: #1976d2;
+}
+
+#simulation-panel .btn-secondary {
+  background: #4caf50;
+  color: white;
+  border-color: #388e3c;
+}
+
+#simulation-panel .btn-secondary:hover:not(:disabled) {
+  background: #388e3c;
+}
+
+#simulation-panel .sim-status {
+  border-top: 1px solid #eee;
+  padding-top: 8px;
+}
+
+#simulation-panel .status-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  padding: 2px 0;
+}
+
+#simulation-panel .status-row .label {
+  color: #666;
+}
+
+#simulation-panel .status-row .value {
+  color: #333;
+  font-weight: 500;
+}
+
+#simulation-panel .status-running {
+  color: #4caf50 !important;
+}
+
+#simulation-panel .status-paused {
+  color: #ff9800 !important;
+}
+
+#simulation-panel .status-stopped {
+  color: #666 !important;
+}
+
+/* Vehicle Markers */
+.vehicle-marker {
+  background: transparent !important;
+  border: none !important;
+}
+
+.vehicle-body {
+  background: #2196f3;
+  border: 2px solid #1565c0;
+  border-radius: 3px;
+  transform-origin: center center;
+}
