@@ -1,20 +1,24 @@
-# Traffic Simulator - Development Guide
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project Overview
 
 Traffic simulation using OSM data with real-time vehicle navigation. MVC architecture with TypeScript.
 
-## Quick Reference
-
-### Run Development
+## Commands
 
 ```bash
-npm run dev      # Start dev server at localhost:5173
-npm run build    # Production build
-npm run preview  # Preview production build
+npm run dev          # Start dev server at localhost:5173
+npm run build        # TypeScript check + production build
+npm run preview      # Preview production build
+npm run lint         # Run ESLint on src/
+npm run lint:fix     # Run ESLint with auto-fix
+npm run format       # Format with Prettier
+npm run format-check # Check formatting
 ```
 
-### Key Entry Points
+## Key Entry Points
 
 - `src/main.ts` - Application bootstrap
 - `index.html` - Single page entry
