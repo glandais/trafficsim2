@@ -1,7 +1,9 @@
 import "leaflet/dist/leaflet.css";
-import { OSMParser, GraphBuilder } from "./services";
+import { decode } from "cbor-x";
+import { GraphBuilder } from "./services";
 import { MapView, InfoPanel, VehicleView, SimulationPanel } from "./views";
 import { MapController, SimulationController } from "./controllers";
+import type { RoadGraph } from "./models";
 
 /**
  * Main application entry point
@@ -19,35 +21,18 @@ async function main(): Promise<void> {
 
     // Update loading message
     if (loadingEl) {
-      loadingEl.textContent = "Loading OSM data...";
+      loadingEl.textContent = "Loading road graph...";
     }
 
-    // Fetch OSM data
-    const response = await fetch("/map.osm");
+    // Fetch preprocessed CBOR graph data
+    const response = await fetch("/graph.cbor");
     if (!response.ok) {
-      throw new Error(`Failed to load OSM file: ${response.statusText}`);
+      throw new Error(`Failed to load graph.cbor: ${response.statusText}`);
     }
-    const osmXml = await response.text();
+    const cborData = await response.arrayBuffer();
 
-    // Update loading message
-    if (loadingEl) {
-      loadingEl.textContent = "Parsing OSM data...";
-    }
-
-    // Parse OSM data
-    const parser = new OSMParser();
-    const parseResult = parser.parse(osmXml);
-
-    console.log(`Parsed ${parseResult.nodes.size} nodes and ${parseResult.ways.size} ways`);
-
-    // Update loading message
-    if (loadingEl) {
-      loadingEl.textContent = "Building road graph...";
-    }
-
-    // Build road graph
-    const graphBuilder = new GraphBuilder();
-    const graph = graphBuilder.build(parseResult.nodes, parseResult.ways, parseResult.bounds);
+    // Decode CBOR (Maps are preserved natively!)
+    const graph = decode(new Uint8Array(cborData)) as RoadGraph;
 
     // Log statistics
     const stats = GraphBuilder.getStats(graph);

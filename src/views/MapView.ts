@@ -17,17 +17,41 @@ export class MapView {
     this.map = L.map(containerId, {
       zoomControl: true,
       attributionControl: true,
-    }).setView([47.178, -1.606], 14);
+    });
 
-    // Add OpenStreetMap tiles
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    // Define base layers
+    const osmLayer = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution:
         '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
       maxZoom: 19,
-    }).addTo(this.map);
+    });
+
+    const satelliteLayer = L.tileLayer(
+      "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+      {
+        attribution:
+          "Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community",
+        maxZoom: 19,
+      }
+    );
+
+    // Add default layer
+    osmLayer.addTo(this.map);
 
     // Create layer group for roads
     this.roadGroup = L.layerGroup().addTo(this.map);
+
+    // Add layer control
+    const baseLayers = {
+      "Street Map": osmLayer,
+      Satellite: satelliteLayer,
+    };
+
+    const overlays = {
+      Roads: this.roadGroup,
+    };
+
+    L.control.layers(baseLayers, overlays, { position: "topright" }).addTo(this.map);
 
     // Update road widths on zoom change
     this.map.on("zoomend", () => this.updateRoadWidths());

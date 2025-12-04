@@ -12,6 +12,7 @@ Traffic simulation using OSM data with real-time vehicle navigation. MVC archite
 npm run dev          # Start dev server at localhost:5173
 npm run build        # TypeScript check + production build
 npm run preview      # Preview production build
+npm run preprocess   # Convert OSM XML to CBOR (osm/map.osm -> public/graph.cbor)
 npm run lint         # Run ESLint on src/
 npm run lint:fix     # Run ESLint with auto-fix
 npm run format       # Format with Prettier
@@ -22,7 +23,8 @@ npm run format-check # Check formatting
 
 - `src/main.ts` - Application bootstrap
 - `index.html` - Single page entry
-- `public/map.osm` - OSM data file
+- `osm/map.osm` - OSM source data (preprocessed to CBOR)
+- `public/graph.cbor` - Preprocessed road graph (CBOR format with native Map support)
 
 ## Architecture
 
@@ -38,10 +40,14 @@ npm run format-check # Check formatting
 **Services** (`src/services/`)
 
 - Business logic, no UI dependencies
-- `OSMParser.ts` - XML → OSMNode/OSMWay maps
-- `GraphBuilder.ts` - OSMNode/Way → RoadGraph with segments
 - `PathFinder.ts` - A\* algorithm using segment connectivity
 - `SimulationEngine.ts` - Game loop, physics updates
+- `OSMParser.ts` - XML → OSMNode/OSMWay maps (build-time only)
+- `GraphBuilder.ts` - OSMNode/Way → RoadGraph with segments (build-time only)
+
+**Scripts** (`scripts/`)
+
+- `preprocess-osm.ts` - Converts OSM XML to CBOR using SAX streaming parser
 
 **Views** (`src/views/`)
 
@@ -133,12 +139,16 @@ Segment
 
 ```
 main.ts
-├── services/OSMParser → models/OSMNode, OSMWay
-├── services/GraphBuilder → models/RoadGraph, Segment
+├── cbor-x (decode CBOR → RoadGraph with Maps)
 ├── views/MapView, InfoPanel, VehicleView, SimulationPanel
 └── controllers/MapController, SimulationController
     └── services/PathFinder, SimulationEngine
         └── models/Vehicle, RoadGraph
+
+scripts/preprocess-osm.ts (build-time)
+├── sax (streaming XML parser)
+├── cbor-x (encode RoadGraph → CBOR)
+└── models/RoadGraph, Segment, OSMNode, OSMWay
 ```
 
 ## Testing Considerations
