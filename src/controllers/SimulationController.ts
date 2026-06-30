@@ -10,6 +10,7 @@ import {
   createDefaultCarPhysics,
   createRandomDriverBehavior,
   createInitialLaneChangeState,
+  createInitialStopSignState,
 } from "../models";
 import { PathFinder, SimulationEngine } from "../services";
 import { VehicleView, SimulationPanel } from "../views";
@@ -58,7 +59,7 @@ export class SimulationController {
           break;
         case "vehicleArrived":
           console.log(`Vehicle ${event.vehicleId} arrived at destination`);
-          this.engine.removeVehicle(event.vehicleId);
+          this.assignNewRoute(event.vehicleId);
           break;
       }
     });
@@ -130,6 +131,47 @@ export class SimulationController {
   }
 
   /**
+   * Assign a new route to a vehicle that has arrived at its destination
+   */
+  private assignNewRoute(vehicleId: string): void {
+    const vehicles = this.engine.getVehicles();
+    const drivenVehicle = vehicles.find((v) => v.vehicle.id === vehicleId);
+    if (!drivenVehicle) return;
+
+    // Get current segment (destination of previous route)
+    const currentSegmentId = drivenVehicle.vehicle.state.roadPosition.segmentId;
+
+    // Find new random destination
+    let attempts = 0;
+    while (attempts < 50) {
+      attempts++;
+      const newDestination = this.pathFinder.getRandomNavigableSegment();
+      if (newDestination === currentSegmentId) continue;
+
+      const pathResult = this.pathFinder.findPath(currentSegmentId, newDestination);
+      if (pathResult.found && pathResult.path.length > 1) {
+        // Reset navigation with new route
+        drivenVehicle.driver.navigation.route = pathResult.path.map((p) => p.segmentId);
+        drivenVehicle.driver.navigation.currentRouteIndex = 0;
+        drivenVehicle.driver.navigation.hasArrived = false;
+
+        // Reset position to start of first segment
+        drivenVehicle.vehicle.state.roadPosition.distanceAlongSegment = 0;
+        drivenVehicle.vehicle.state.roadPosition.direction = pathResult.path[0].direction;
+
+        console.log(
+          `Vehicle ${vehicleId} assigned new route of ${pathResult.path.length} segments (${(pathResult.totalDistance / 1000).toFixed(2)} km)`
+        );
+        return;
+      }
+    }
+
+    // If no path found, remove vehicle
+    console.log(`Vehicle ${vehicleId} could not find new route, removing`);
+    this.engine.removeVehicle(vehicleId);
+  }
+
+  /**
    * Create a driven vehicle
    */
   private createDrivenVehicle(
@@ -170,6 +212,7 @@ export class SimulationController {
         roadPosition,
         geoPosition,
         laneChange: createInitialLaneChangeState(),
+        stopSignState: createInitialStopSignState(),
       },
     };
 

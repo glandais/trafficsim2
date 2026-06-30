@@ -1,7 +1,7 @@
 export type { OSMNode } from "./OSMNode";
 export type { OSMWay } from "./OSMWay";
 export type { Segment } from "./Segment";
-export type { RoadGraph } from "./RoadGraph";
+export type { RoadGraph, StopSignInfo } from "./RoadGraph";
 export type { RoadMetadata } from "./RoadTypes";
 export { HighwayType, DRIVEABLE_HIGHWAYS } from "./RoadTypes";
 
@@ -11,6 +11,7 @@ export type {
   GeoPosition,
   VehiclePhysics,
   LaneChangeState,
+  StopSignState,
   VehicleState,
   Vehicle,
   DriverBehavior,
@@ -22,4 +23,5 @@ export {
   createDefaultCarPhysics,
   createRandomDriverBehavior,
   createInitialLaneChangeState,
+  createInitialStopSignState,
 } from "./Vehicle";

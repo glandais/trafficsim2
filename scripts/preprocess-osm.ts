@@ -11,7 +11,7 @@ import { createReadStream, writeFileSync, mkdirSync } from "fs";
 import { dirname } from "path";
 import sax from "sax";
 import { encode } from "cbor-x";
-import type { RoadGraph, OSMNode, OSMWay, Segment, RoadMetadata } from "../src/models";
+import type { RoadGraph, OSMNode, OSMWay, Segment, RoadMetadata, StopSignInfo } from "../src/models";
 import { DRIVEABLE_HIGHWAYS } from "../src/models";
 
 // Constants
@@ -130,6 +130,7 @@ function canEnterSegment(fromNodeId: string, segment: Segment): boolean {
 interface ParseState {
   nodes: Map<string, OSMNode>;
   ways: Map<string, OSMWay>;
+  stopSignNodes: Map<string, StopSignInfo>;
   bounds: { minLat: number; maxLat: number; minLon: number; maxLon: number };
   currentElement: "node" | "way" | null;
   currentId: string | null;
@@ -142,12 +143,14 @@ interface ParseState {
 async function parseOSM(inputPath: string): Promise<{
   nodes: Map<string, OSMNode>;
   ways: Map<string, OSMWay>;
+  stopSignNodes: Map<string, StopSignInfo>;
   bounds: ParseState["bounds"];
 }> {
   return new Promise((resolve, reject) => {
     const state: ParseState = {
       nodes: new Map(),
       ways: new Map(),
+      stopSignNodes: new Map(),
       bounds: { minLat: 0, maxLat: 0, minLon: 0, maxLon: 0 },
       currentElement: null,
       currentId: null,
@@ -205,6 +208,15 @@ async function parseOSM(inputPath: string): Promise<{
           lon: state.currentLon,
           tags: state.currentTags,
         });
+
+        // Check if this node is a stop sign
+        if (state.currentTags.get("highway") === "stop") {
+          state.stopSignNodes.set(state.currentId, {
+            direction: state.currentTags.get("direction") as "forward" | "backward" | undefined,
+            allWay: state.currentTags.get("stop") === "all",
+          });
+        }
+
         state.currentElement = null;
         state.currentId = null;
       } else if (tagName === "way" && state.currentId) {
@@ -231,8 +243,8 @@ async function parseOSM(inputPath: string): Promise<{
     });
 
     parser.on("end", () => {
-      console.log(`Parsed ${state.nodes.size} nodes, ${state.ways.size} driveable ways`);
-      resolve({ nodes: state.nodes, ways: state.ways, bounds: state.bounds });
+      console.log(`Parsed ${state.nodes.size} nodes, ${state.ways.size} driveable ways, ${state.stopSignNodes.size} stop signs`);
+      resolve({ nodes: state.nodes, ways: state.ways, stopSignNodes: state.stopSignNodes, bounds: state.bounds });
     });
 
     createReadStream(inputPath).pipe(parser);
@@ -242,6 +254,7 @@ async function parseOSM(inputPath: string): Promise<{
 function buildGraph(
   nodes: Map<string, OSMNode>,
   ways: Map<string, OSMWay>,
+  stopSignNodes: Map<string, StopSignInfo>,
   bounds: ParseState["bounds"]
 ): RoadGraph {
   const segments = new Map<string, Segment>();
@@ -328,6 +341,7 @@ function buildGraph(
     segments,
     nodeToSegments,
     intersections,
+    stopSigns: stopSignNodes,
     bounds,
   };
 }
@@ -340,8 +354,8 @@ async function main() {
 
   console.log(`Processing: ${inputPath} -> ${outputPath}`);
 
-  const { nodes, ways, bounds } = await parseOSM(inputPath);
-  const graph = buildGraph(nodes, ways, bounds);
+  const { nodes, ways, stopSignNodes, bounds } = await parseOSM(inputPath);
+  const graph = buildGraph(nodes, ways, stopSignNodes, bounds);
 
   // CBOR natively supports Maps!
   const cborData = encode(graph);

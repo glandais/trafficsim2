@@ -3,6 +3,14 @@ import type { OSMWay } from "./OSMWay";
 import type { Segment } from "./Segment";
 
 /**
+ * Stop sign information
+ */
+export interface StopSignInfo {
+  direction?: "forward" | "backward"; // which direction must stop (relative to way)
+  allWay: boolean; // all approaches must stop
+}
+
+/**
  * The complete road network graph structure
  */
 export interface RoadGraph {
@@ -20,6 +28,9 @@ export interface RoadGraph {
 
   /** Intersection nodes: nodeId -> segment IDs (only for nodes with 2+ connections) */
   intersections: Map<string, string[]>;
+
+  /** Stop sign nodes: nodeId -> stop sign info */
+  stopSigns: Map<string, StopSignInfo>;
 
   /** Geographic bounds of the graph */
   bounds: {

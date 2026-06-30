@@ -38,6 +38,16 @@ export interface LaneChangeState {
 }
 
 /**
+ * Stop sign waiting state
+ */
+export interface StopSignState {
+  isWaitingAtStop: boolean;
+  stoppedTime: number; // seconds spent stopped
+  requiredStopTime: number; // seconds required to stop
+  stopNodeId: string | null; // which stop sign we're at
+}
+
+/**
  * Dynamic state of a vehicle
  */
 export interface VehicleState {
@@ -46,6 +56,7 @@ export interface VehicleState {
   roadPosition: RoadPosition;
   geoPosition: GeoPosition;
   laneChange: LaneChangeState;
+  stopSignState: StopSignState;
 }
 
 /**
@@ -126,5 +137,17 @@ export function createInitialLaneChangeState(): LaneChangeState {
     isChanging: false,
     targetLane: 0,
     progress: 0,
+  };
+}
+
+/**
+ * Create initial stop sign state (not waiting)
+ */
+export function createInitialStopSignState(): StopSignState {
+  return {
+    isWaitingAtStop: false,
+    stoppedTime: 0,
+    requiredStopTime: 0,
+    stopNodeId: null,
   };
 }

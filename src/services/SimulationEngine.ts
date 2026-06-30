@@ -40,6 +40,11 @@ export type SimulationEventCallback = (event: SimulationEvent) => void;
 const LANE_WIDTH = 3.5;
 
 /**
+ * Distance in meters at which vehicle starts decelerating for stop sign
+ */
+const STOP_APPROACH_DISTANCE = 20;
+
+/**
  * Main simulation engine with game loop
  */
 export class SimulationEngine {
@@ -227,6 +232,26 @@ export class SimulationEngine {
     const segment = this.graph.segments.get(vehicle.state.roadPosition.segmentId);
     if (!segment) return;
 
+    // Check if waiting at stop sign
+    const { stopSignState } = vehicle.state;
+    if (stopSignState.isWaitingAtStop) {
+      stopSignState.stoppedTime += deltaTime;
+
+      if (stopSignState.stoppedTime >= stopSignState.requiredStopTime) {
+        // Done waiting, can proceed
+        // Keep stopNodeId set to prevent re-triggering until we've moved past this node
+        stopSignState.isWaitingAtStop = false;
+        stopSignState.stoppedTime = 0;
+      } else {
+        // Still waiting - keep speed at 0
+        vehicle.state.speed = 0;
+        vehicle.state.acceleration = 0;
+        // Still update geo position (vehicle is stopped but position needs to be current)
+        vehicle.state.geoPosition = this.calculateGeoPosition(drivenVehicle);
+        return;
+      }
+    }
+
     // 1. Calculate desired speed
     const desiredSpeed = this.calculateDesiredSpeed(drivenVehicle, segment);
 
@@ -253,13 +278,60 @@ export class SimulationEngine {
   }
 
   /**
+   * Calculate required stop time based on driver aggressiveness
+   * Aggressive (1.0): 2.0s, Normal (0.5): 2.75s, Cautious (0.0): 3.5s
+   */
+  private calculateRequiredStopTime(aggressiveness: number): number {
+    const baseTime = 3.5; // seconds (cautious driver)
+    const variance = 1.5; // seconds
+    return baseTime - aggressiveness * variance; // Range: 2.0 - 3.5 seconds
+  }
+
+  /**
+   * Check if a stop sign applies to the vehicle's current direction
+   */
+  private shouldStopAtNode(nodeId: string, currentDirection: "forward" | "backward"): boolean {
+    const stopSign = this.graph.stopSigns?.get(nodeId);
+    if (!stopSign) return false;
+
+    // All-way stop or no direction specified means all directions must stop
+    if (stopSign.allWay || !stopSign.direction) return true;
+
+    // Check if direction matches
+    return stopSign.direction === currentDirection;
+  }
+
+  /**
    * Calculate desired speed based on road and driver
    */
   private calculateDesiredSpeed(drivenVehicle: DrivenVehicle, segment: Segment): number {
     const { vehicle, driver } = drivenVehicle;
+    const { roadPosition } = vehicle.state;
     const speedLimit = (segment.metadata.maxspeed || 50) / 3.6; // km/h to m/s
     const driverPreferred = speedLimit * driver.behavior.preferredSpeedFactor;
-    return Math.min(driverPreferred, vehicle.physics.maxSpeed);
+    let desiredSpeed = Math.min(driverPreferred, vehicle.physics.maxSpeed);
+
+    // Check if approaching a stop sign
+    const distanceToEnd = segment.length - roadPosition.distanceAlongSegment;
+    const { stopSignState } = vehicle.state;
+
+    if (distanceToEnd < STOP_APPROACH_DISTANCE) {
+      const exitNode =
+        roadPosition.direction === "forward" ? segment.endNodeId : segment.startNodeId;
+
+      // Only slow down if we haven't already stopped at this node
+      if (
+        this.shouldStopAtNode(exitNode, roadPosition.direction) &&
+        stopSignState.stopNodeId !== exitNode
+      ) {
+        // Gradually reduce speed as approaching stop sign
+        const approachFactor = distanceToEnd / STOP_APPROACH_DISTANCE;
+        const approachSpeed = desiredSpeed * approachFactor;
+        desiredSpeed = Math.max(0, approachSpeed);
+      }
+    }
+
+    return desiredSpeed;
   }
 
   /**
@@ -307,6 +379,29 @@ export class SimulationEngine {
         roadPosition.distanceAlongSegment += remainingDistance;
         remainingDistance = 0;
       } else {
+        // About to move to next segment - check for stop sign at exit node
+        const exitNode =
+          roadPosition.direction === "forward"
+            ? currentSegment.endNodeId
+            : currentSegment.startNodeId;
+
+        // Check if there's a stop sign and we haven't already stopped at it
+        const { stopSignState } = vehicle.state;
+        if (
+          this.shouldStopAtNode(exitNode, roadPosition.direction) &&
+          stopSignState.stopNodeId !== exitNode
+        ) {
+          // Trigger stop state - position at end of segment and wait
+          roadPosition.distanceAlongSegment = currentSegment.length;
+          stopSignState.isWaitingAtStop = true;
+          stopSignState.stoppedTime = 0;
+          stopSignState.requiredStopTime = this.calculateRequiredStopTime(
+            driver.behavior.aggressiveness
+          );
+          stopSignState.stopNodeId = exitNode;
+          return; // Exit - vehicle will wait at stop sign
+        }
+
         // Move to next segment
         remainingDistance -= distanceToEnd;
         navigation.currentRouteIndex++;
@@ -326,11 +421,6 @@ export class SimulationEngine {
             roadPosition.distanceAlongSegment = 0;
 
             // Determine direction based on how we enter the segment
-            const exitNode =
-              roadPosition.direction === "forward"
-                ? currentSegment.endNodeId
-                : currentSegment.startNodeId;
-
             if (nextSegment.startNodeId === exitNode) {
               roadPosition.direction = "forward";
             } else {
@@ -340,6 +430,9 @@ export class SimulationEngine {
             // Reset lane for new segment (stay in same relative lane)
             const nextLanes = nextSegment.metadata.lanes || 1;
             roadPosition.lane = Math.min(roadPosition.lane, nextLanes - 1);
+
+            // Clear stop sign state now that we've moved past the node
+            stopSignState.stopNodeId = null;
 
             currentSegment = nextSegment;
           } else {
@@ -407,9 +500,20 @@ export class SimulationEngine {
       currentLane = fromLane + (toLane - fromLane) * laneChange.progress;
     }
 
-    // Lane offset: positive = right, negative = left
-    // Lane 0 is rightmost
-    const laneOffset = (currentLane - (totalLanes - 1) / 2) * LANE_WIDTH;
+    // Calculate lateral offset based on road type and direction
+    let laneOffset: number;
+    const isOneway = segment.metadata.oneway;
+
+    if (isOneway) {
+      // One-way: center lanes across full width
+      // Lane 0 is rightmost
+      laneOffset = (currentLane - (totalLanes - 1) / 2) * LANE_WIDTH;
+    } else {
+      // Bidirectional: each direction uses half the road (right-hand traffic)
+      // Forward = right side (negative offset), Backward = left side (positive offset)
+      const halfWidth = segment.metadata.width / 4; // Quarter width = center of each half
+      laneOffset = roadPosition.direction === "forward" ? -halfWidth : halfWidth;
+    }
 
     // Apply perpendicular offset
     const perpBearing = (bearing + 90) % 360;

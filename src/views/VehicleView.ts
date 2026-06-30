@@ -2,6 +2,14 @@ import L from "leaflet";
 import type { DrivenVehicle, GeoPosition } from "../models";
 
 /**
+ * Vehicle color with main and border colors
+ */
+interface VehicleColor {
+  main: string;
+  border: string;
+}
+
+/**
  * Rendered vehicle tracking
  */
 interface RenderedVehicle {
@@ -9,7 +17,26 @@ interface RenderedVehicle {
   previousPosition: GeoPosition;
   targetPosition: GeoPosition;
   interpolationStart: number;
+  color: VehicleColor;
 }
+
+/**
+ * Predefined vehicle colors with matching border colors
+ */
+const VEHICLE_COLORS: VehicleColor[] = [
+  { main: "#e53935", border: "#b71c1c" }, // Red
+  { main: "#1e88e5", border: "#0d47a1" }, // Blue
+  { main: "#43a047", border: "#1b5e20" }, // Green
+  { main: "#fb8c00", border: "#e65100" }, // Orange
+  { main: "#8e24aa", border: "#4a148c" }, // Purple
+  { main: "#00acc1", border: "#006064" }, // Cyan
+  { main: "#fdd835", border: "#f9a825" }, // Yellow
+  { main: "#6d4c41", border: "#3e2723" }, // Brown
+  { main: "#d81b60", border: "#880e4f" }, // Pink
+  { main: "#546e7a", border: "#263238" }, // Blue Grey
+  { main: "#7cb342", border: "#33691e" }, // Light Green
+  { main: "#f4511e", border: "#bf360c" }, // Deep Orange
+];
 
 /**
  * Vehicle rendering on Leaflet map
@@ -66,8 +93,9 @@ export class VehicleView {
   private createVehicleMarker(drivenVehicle: DrivenVehicle): void {
     const { vehicle } = drivenVehicle;
     const pos = vehicle.state.geoPosition;
+    const color = this.getRandomColor();
 
-    const icon = this.createVehicleIcon(pos.bearing);
+    const icon = this.createVehicleIcon(pos.bearing, color);
 
     const marker = L.marker([pos.lat, pos.lon], {
       icon,
@@ -81,13 +109,21 @@ export class VehicleView {
       previousPosition: { ...pos },
       targetPosition: { ...pos },
       interpolationStart: performance.now(),
+      color,
     });
+  }
+
+  /**
+   * Get a random color from the palette
+   */
+  private getRandomColor(): VehicleColor {
+    return VEHICLE_COLORS[Math.floor(Math.random() * VEHICLE_COLORS.length)];
   }
 
   /**
    * Create vehicle icon (rotated rectangle)
    */
-  private createVehicleIcon(bearing: number): L.DivIcon {
+  private createVehicleIcon(bearing: number, color: VehicleColor): L.DivIcon {
     const zoom = this.map.getZoom();
     // Scale vehicle size based on zoom (similar to roads)
     const scale = Math.pow(2, zoom - 14) * 0.4;
@@ -100,6 +136,8 @@ export class VehicleView {
         width: ${length}px;
         height: ${width}px;
         transform: rotate(${bearing - 90}deg);
+        background: ${color.main};
+        border-color: ${color.border};
       "></div>`,
       iconSize: [length, width],
       iconAnchor: [length / 2, width / 2],
@@ -147,8 +185,8 @@ export class VehicleView {
       // Update marker position
       rendered.marker.setLatLng([lat, lon]);
 
-      // Update icon rotation
-      const icon = this.createVehicleIcon(bearing);
+      // Update icon rotation with preserved color
+      const icon = this.createVehicleIcon(bearing, rendered.color);
       rendered.marker.setIcon(icon);
     }
   }
@@ -158,7 +196,7 @@ export class VehicleView {
    */
   private updateAllIcons(): void {
     for (const rendered of this.renderedVehicles.values()) {
-      const icon = this.createVehicleIcon(rendered.targetPosition.bearing);
+      const icon = this.createVehicleIcon(rendered.targetPosition.bearing, rendered.color);
       rendered.marker.setIcon(icon);
     }
   }
