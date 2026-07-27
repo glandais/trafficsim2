@@ -11,7 +11,14 @@ import { createReadStream, writeFileSync, mkdirSync } from "fs";
 import { dirname } from "path";
 import sax from "sax";
 import { encode } from "cbor-x";
-import type { RoadGraph, OSMNode, OSMWay, Segment, RoadMetadata, StopSignInfo } from "../src/models";
+import type {
+  RoadGraph,
+  OSMNode,
+  OSMWay,
+  Segment,
+  RoadMetadata,
+  StopSignInfo,
+} from "../src/models";
 import { DRIVEABLE_HIGHWAYS } from "../src/models";
 
 // Constants
@@ -243,8 +250,15 @@ async function parseOSM(inputPath: string): Promise<{
     });
 
     parser.on("end", () => {
-      console.log(`Parsed ${state.nodes.size} nodes, ${state.ways.size} driveable ways, ${state.stopSignNodes.size} stop signs`);
-      resolve({ nodes: state.nodes, ways: state.ways, stopSignNodes: state.stopSignNodes, bounds: state.bounds });
+      console.log(
+        `Parsed ${state.nodes.size} nodes, ${state.ways.size} driveable ways, ${state.stopSignNodes.size} stop signs`
+      );
+      resolve({
+        nodes: state.nodes,
+        ways: state.ways,
+        stopSignNodes: state.stopSignNodes,
+        bounds: state.bounds,
+      });
     });
 
     createReadStream(inputPath).pipe(parser);

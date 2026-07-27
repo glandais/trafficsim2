@@ -13,9 +13,9 @@ npm run dev          # Start dev server at localhost:5173
 npm run build        # TypeScript check + production build
 npm run preview      # Preview production build
 npm run preprocess   # Convert OSM XML to CBOR (osm/map.osm -> public/graph.cbor)
-npm run lint         # Run ESLint on src/
-npm run lint:fix     # Run ESLint with auto-fix
-npm run format       # Format with Prettier
+npm run lint         # Run oxlint on src/
+npm run lint:fix     # Run oxlint with auto-fix
+npm run format       # Format with oxfmt
 npm run format-check # Check formatting
 ```
 
